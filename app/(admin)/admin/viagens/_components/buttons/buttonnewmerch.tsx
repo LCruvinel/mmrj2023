@@ -39,7 +39,6 @@ const formSchema = z.object({
   mercadoria: z.number().nullable(),
   unidade_de_medida: z.number().nullable(),
   quantidade: z.string(),
-  valor_frete: z.string(),
 });
 
 import { useToast } from "@/components/ui/use-toast";
@@ -68,7 +67,6 @@ export default function ButtonNewMerch(props: {
       mercadoria: null,
       unidade_de_medida: null,
       quantidade: "",
-      valor_frete: "",
     },
   });
 
@@ -336,22 +334,6 @@ export default function ButtonNewMerch(props: {
                   <Input
                     type="number"
                     placeholder="Ex: 10"
-                    className="w-full"
-                    {...field}
-                  />
-                </FormItem>
-              )}
-            />
-
-            {/* VALOR FRETE */}
-            <FormField
-              control={form.control}
-              name="valor_frete"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Valor do Frete</FormLabel>
-                  <Input
-                    placeholder="Ex: 10.00"
                     className="w-full"
                     {...field}
                   />

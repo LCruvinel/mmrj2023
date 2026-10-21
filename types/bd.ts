@@ -79,7 +79,7 @@ interface Porto {
 
 interface Pais {
   id: number;
-  pais: string;
+  nome: string;
   gentilico: string;
   porto: Porto[];
   pessoa: Pessoa[];
@@ -116,7 +116,7 @@ interface Viagem {
   mestre_id: number;
   capitao_id: number;
   comandante_id: number;
-  entrada_sahida: string;
+  entrada_saida: string;
   dias_viagem: number;
   data_chegada: Date;
   data_rio: Date;
@@ -142,15 +142,9 @@ interface Escala {
   id: number;
   id_viagem: number;
   id_porto: number;
-  data_escala: Date;
-  ano: number;
-  dias_porto: number;
-  entrada_de_passageiros: number;
-  saida_de_passageiros: number;
-  observacoes: string;
-  porto: Porto;
-  viagem: Viagem;
-  relac_mercadoria_escala: RelacMercadoriaEscala[];
+  porto?: Porto;
+  viagem?: Viagem;
+  relac_mercadoria_escala?: RelacMercadoriaEscala[];
 }
 
 interface Mercadoria {

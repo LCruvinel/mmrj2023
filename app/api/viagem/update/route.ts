@@ -23,7 +23,7 @@ export async function PUT(req: Request) {
     id_capitao,
     id_comandante,
     id_armador,
-    entrada_sahida,
+    entrada_saida,
     dias_viagem,
     data_chegada,
     data_rio,
@@ -39,7 +39,7 @@ export async function PUT(req: Request) {
         : null,
       dias_porto_destino: Number(dias_porto_destino) || null,
       dias_porto_origem: Number(dias_porto_origem) || null,
-      entrada_sahida: entrada_sahida || null,
+      entrada_saida: entrada_saida || null,
       dias_viagem: Number(dias_viagem) || null,
       data_chegada: dayjs(data_chegada, 'DD-MM-YYYY').isValid()
         ? dayjs(data_chegada, 'DD-MM-YYYY').toDate()

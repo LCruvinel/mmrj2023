@@ -1,0 +1,10 @@
+services:
+  web:
+    build: .
+    image: movimentomercantil
+    restart: unless-stopped
+    # Database credentials live in this file on the server (copy from .env.example).
+    env_file: .env
+    # Host networking lets DB_HOST=localhost reach the PostgreSQL running on the Ubuntu host.
+    # The app listens directly on the host's port 3001.
+    network_mode: host

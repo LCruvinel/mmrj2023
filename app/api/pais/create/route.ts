@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
   const existe = await prisma.pais.findFirst({
     where: {
-      pais: {
+      nome: {
         equals: nome,
         mode: "insensitive",
       },
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
   const result = await prisma.pais.create({
     data: {
-      pais: nome,
+      nome: nome,
       gentilico: gentilico,
     },
   });

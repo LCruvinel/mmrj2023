@@ -39,7 +39,7 @@ function setHeaders(worksheet: any) {
 
 const setData = (worksheet: any, paises: Pais[]) => {
   paises.map((pais) => {
-    worksheet.addRow([pais.id, pais?.pais, pais?.gentilico]);
+    worksheet.addRow([pais.id, pais?.nome, pais?.gentilico]);
   });
 };
 

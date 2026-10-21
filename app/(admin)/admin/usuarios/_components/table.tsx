@@ -167,7 +167,7 @@ export default function TabelaUsuarios() {
                   {usuario.habilitado ? "Sim" : "Não"}
                 </Badge>
               </TableCell>
-              {usuario.id != user?.id ? (
+              {Number(usuario.id) !== user?.id ? (
                 <TableCell className="w-4">
                   <div className="flex flex-row gap-2">
                     {/* UPDATE USERS */}

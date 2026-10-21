@@ -13,14 +13,21 @@ export async function GET() {
   const result = await prisma.user.findMany({
     select: {
       id: true,
-      email: true,
-      nome: true,
-      habilitado: true,
+      username: true,
+      active: true,
       role: true,
     },
     orderBy: {
-      nome: "asc",
+      username: "asc",
     },
   });
-  return Response.json(result);
+  return Response.json(
+    result.map((user) => ({
+      ...user,
+      email: user.username,
+      nome: user.username,
+      habilitado: user.active,
+      role: user.role.toUpperCase(),
+    }))
+  );
 }

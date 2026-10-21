@@ -20,10 +20,14 @@ export async function PUT(req: Request) {
         mode: "insensitive",
       },
       pais: {
-        id: Number(pais),
+        is: {
+          id: Number(pais),
+        },
       },
       titulo_nobreza: {
-        id: Number(titulo_nobreza),
+        is: {
+          id: Number(titulo_nobreza),
+        },
       },
     },
   });

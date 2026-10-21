@@ -15,7 +15,7 @@ export async function GET() {
       nome: true,
       pais: {
         select: {
-          pais: true,
+          nome: true,
         },
       },
     },

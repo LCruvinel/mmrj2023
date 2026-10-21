@@ -13,7 +13,7 @@ export async function GET() {
     select: {
       id: true,
       data_rio: true,
-      entrada_sahida: true,
+      entrada_saida: true,
       embarcacao: {
         select: {
           nome: true,

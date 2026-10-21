@@ -15,20 +15,22 @@ export async function GET(req: Request) {
     where: {
       OR: [
         {
-          nome: { startsWith: search?.toString(), mode: "insensitive" },
-        },
-        {
-          email: { startsWith: search?.toString(), mode: "insensitive" },
+          username: { startsWith: search?.toString(), mode: "insensitive" },
         },
       ],
     },
 
     select: {
       id: true,
-      nome: true,
-      email: true,
+      username: true,
     },
   });
 
-  return Response.json(result);
+  return Response.json(
+    result.map((user) => ({
+      id: user.id,
+      email: user.username,
+      nome: user.username,
+    }))
+  );
 }

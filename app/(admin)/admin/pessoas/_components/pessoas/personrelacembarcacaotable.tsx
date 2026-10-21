@@ -89,7 +89,7 @@ export default function PersonRelacaoEmbarcacaoTable(props: {
               </TableCell>
 
               <TableCell className="px-4 py-0 text-xs">
-                {relacao.pais.pais}
+                {relacao.pais.nome}
               </TableCell>
               <TableCell className="px-4 py-0 text-xs">
                 <AlertDialog>

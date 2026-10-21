@@ -46,6 +46,27 @@ import {
 dayjs.extend(utc);
 dayjs.extend(tz);
 
+function formatStoredDateText(value: unknown) {
+  if (value === null || value === undefined) return 'N/A';
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return 'N/A';
+
+    if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) {
+      return trimmed.slice(0, 10);
+    }
+
+    return trimmed;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? 'N/A' : value.toISOString().slice(0, 10);
+  }
+
+  return String(value);
+}
+
 export default function VesselDetails(props: {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
@@ -171,7 +192,7 @@ export default function VesselDetails(props: {
                             <TableRow key={relacao.id}>
                               <TableCell className="text-xs font-medium">
                                 {relacao.pessoa.nome} |{" "}
-                                {relacao.pessoa?.pais?.pais}
+                                {relacao.pessoa?.pais?.nome}
                               </TableCell>
                               <TableCell className="text-xs">
                                 {dayjs
@@ -185,7 +206,7 @@ export default function VesselDetails(props: {
                               </TableCell>
 
                               <TableCell className="text-xs">
-                                {relacao.pais.pais}
+                                {relacao.pais.nome}
                               </TableCell>
                               <TableCell>
                                 <AlertDialog>
@@ -269,29 +290,25 @@ export default function VesselDetails(props: {
                               {viagem.id}
                             </TableCell>
                             <TableCell className="text-xs">
-                              {viagem.data_rio
-                                ? dayjs
-                                    .tz(viagem.data_rio, "UTC")
-                                    .format("DD/MM/YYYY")
-                                : "N/A"}
+                              {formatStoredDateText(viagem.data_rio)}
                             </TableCell>
                             <TableCell className="text-xs">
-                              {viagem.entrada_sahida}
+                              {viagem.entrada_saida}
                             </TableCell>
                             <TableCell className="text-xs">
                               {viagem.porto_origem?.nome
                                 ? viagem.porto_origem?.nome
                                 : "N/A"}
-                              {viagem.porto_origem?.pais?.pais
-                                ? " | " + viagem.porto_origem?.pais?.pais
+                              {viagem.porto_origem?.pais?.nome
+                                ? " | " + viagem.porto_origem?.pais?.nome
                                 : ""}
                             </TableCell>
                             <TableCell className="text-xs">
                               {viagem.porto_destino?.nome
                                 ? viagem.porto_destino?.nome
                                 : "N/A"}
-                              {viagem.porto_destino?.pais?.pais
-                                ? " | " + viagem.porto_destino?.pais?.pais
+                              {viagem.porto_destino?.pais?.nome
+                                ? " | " + viagem.porto_destino?.pais?.nome
                                 : ""}
                             </TableCell>
                           </TableRow>

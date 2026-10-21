@@ -141,7 +141,7 @@ export default function BotaoNovoPorto(props: { mutate: () => void }) {
                         >
                           {field.value
                             ? paises?.find((pais) => pais.id === field.value)
-                                ?.pais
+                                ?.nome
                             : "Seleccionar País"}
                           <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
                         </Button>
@@ -157,14 +157,14 @@ export default function BotaoNovoPorto(props: { mutate: () => void }) {
                           <CommandList>
                             {paises?.map((pais) => (
                               <CommandItem
-                                value={pais.pais}
+                                value={pais.nome}
                                 key={pais.id}
                                 onSelect={() => {
                                   form.setValue("id_pais", pais.id);
                                   setSelectPais(false);
                                 }}
                               >
-                                {pais.pais}
+                                {pais.nome}
                               </CommandItem>
                             ))}
                           </CommandList>

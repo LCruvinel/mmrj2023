@@ -15,7 +15,6 @@ export async function GET(req: Request) {
     select: {
       id: true,
       nome: true,
-      observacao: true,
       tipo_embarcacao: {
         select: {
           id: true,
@@ -46,7 +45,7 @@ export async function GET(req: Request) {
   });
 
   const result = {
-    embarcacoes,
+    embarcacoes: embarcacoes.map((embarcacao) => ({ ...embarcacao, observacao: null })),
     total,
   };
 

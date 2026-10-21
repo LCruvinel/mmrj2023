@@ -20,9 +20,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'; // import AddOwner from './addownerbutton';
 import { toast } from 'sonner';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import tz from 'dayjs/plugin/timezone';
 import {
   Accordion,
   AccordionContent,
@@ -39,8 +36,30 @@ import TableNews from './tables/tablenews';
 import TablePassageiros from './tables/tablepassageiros';
 import TableArribas from './tables/tablearribas';
 
-dayjs.extend(utc);
-dayjs.extend(tz);
+function formatStoredDateText(value: unknown) {
+  if (value === null || value === undefined) return 'N/A';
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return 'N/A';
+
+    if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) {
+      return trimmed.slice(0, 10);
+    }
+
+    return trimmed;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? 'N/A' : value.toISOString().slice(0, 10);
+  }
+
+  return String(value);
+}
+
+function renderDbDate(value: unknown) {
+  return formatStoredDateText(value);
+}
 
 export default function TripDetails(props: {
   open: boolean;
@@ -95,12 +114,10 @@ export default function TripDetails(props: {
               <div className='flex flex-wrap gap-2'>
                 <div className='flex flex-col border gap-1 rounded-xl grow'>
                   <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
-                    Data de Partida
+                    Data Rio
                   </div>
                   <div className='p-2 text-xs'>
-                    {viagem?.data_viagem
-                      ? dayjs.tz(viagem.data_viagem, 'UTC').format('DD/MM/YYYY')
-                      : 'N/A'}
+                    {formatStoredDateText(viagem?.data_rio)}
                   </div>
                 </div>
 
@@ -112,7 +129,7 @@ export default function TripDetails(props: {
                     {viagem?.porto_origem?.nome
                       ? viagem?.porto_origem?.nome +
                         ' | ' +
-                        viagem?.porto_origem?.pais?.pais
+                        viagem?.porto_origem?.pais?.nome
                       : 'N/A'}
                   </div>
                 </div>
@@ -132,11 +149,7 @@ export default function TripDetails(props: {
                     Data de Chegada
                   </div>
                   <div className='p-2 text-xs'>
-                    {viagem?.data_chegada
-                      ? dayjs
-                          .tz(viagem.data_chegada, 'UTC')
-                          .format('DD/MM/YYYY')
-                      : 'N/A'}{' '}
+                    {renderDbDate(viagem?.data_chegada)}
                   </div>
                 </div>
 
@@ -147,7 +160,7 @@ export default function TripDetails(props: {
                   <div className='p-2 text-xs'>
                     {viagem?.porto_destino?.nome +
                       ' | ' +
-                      viagem?.porto_destino?.pais?.pais}
+                      viagem?.porto_destino?.pais?.nome}
                   </div>
                 </div>
                 <div className='flex flex-col border gap-1 rounded-xl grow'>
@@ -161,16 +174,6 @@ export default function TripDetails(props: {
               </div>
 
               <div className='flex flex-wrap gap-2'>
-                <div className='flex flex-col border gap-1 rounded-xl grow'>
-                  <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
-                    Data Rio
-                  </div>
-                  <div className='p-2 text-xs'>
-                    {viagem?.data_rio
-                      ? dayjs.tz(viagem.data_rio, 'UTC').format('DD/MM/YYYY')
-                      : 'N/A'}{' '}
-                  </div>
-                </div>
                 <div className='flex flex-col border gap-1 rounded-xl grow'>
                   <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
                     Dias de Viagem
@@ -295,7 +298,7 @@ export default function TripDetails(props: {
                       </div>
                       <div className='flex flex-col border gap-1 rounded-xl grow'>
                         <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
-                          Cosignatario
+                          Cosignatário
                         </div>
                         <div className='p-2 text-xs'>
                           {viagem?.consignatario?.nome}
@@ -346,26 +349,6 @@ export default function TripDetails(props: {
                       mercadorias={viagem?.relac_mercadoria_viagem}
                       viagem_id={viagem?.id}
                       mutate={mutateViagem}
-                    />
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value='docref' className='w-full'>
-                  <AccordionTrigger>Referências Documentais</AccordionTrigger>
-                  <AccordionContent>
-                    <TableRefDocumental
-                      viagem_id={viagem?.id}
-                      refdocs={viagem?.relac_viagem_referencia_doc}
-                      mutate={mutateViagem}
-                    />
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value='news' className='w-full'>
-                  <AccordionTrigger>Notícias</AccordionTrigger>
-                  <AccordionContent>
-                    <TableNews
-                      news={viagem?.noticia}
-                      mutate={mutateViagem}
-                      viagem_id={viagem?.id}
                     />
                   </AccordionContent>
                 </AccordionItem>

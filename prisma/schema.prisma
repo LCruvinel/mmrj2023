@@ -10,30 +10,41 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  schemas = ["auth", "mmrj"]
 }
 
 model User {
-  id            String    @id
-  email         String    @unique
+  id            Int       @id @default(autoincrement())
+  username      String    @unique
   password_hash String
-  nome          String
+  role          String    @default("editor")
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @default(now())
+  active        Boolean   @default(true)
   sessions      Session[]
-  habilitado    Boolean   @default(true)
-  role          Role      @default(EDITOR)
+
+  @@map("users")
+  @@schema("auth")
 }
 
 model Session {
-  id        String   @id
-  userId    String
-  expiresAt DateTime
-  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  token       String   @unique
+  expires_at  DateTime
+  created_at  DateTime @default(now())
+  user        User     @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+  @@schema("auth")
 }
 
 model cargo {
   id                   Int                  @id @default(autoincrement())
   cargo                String               @db.VarChar(30)
   relacao_pessoa_cargo relac_pessoa_cargo[]
+
+  @@schema("mmrj")
 }
 
 model relac_pessoa_cargo {
@@ -44,10 +55,12 @@ model relac_pessoa_cargo {
   id_pessoa  Int
   data_cargo DateTime?
   ano        Int?      @db.SmallInt
+
+  @@schema("mmrj")
 }
 
 model pessoa {
-  id                              Int                             @id @default(autoincrement())
+  id                              Int                             @id @default(autoincrement()) @map("id_pessoa")
   nome                            String                          @db.VarChar(100)
   id_pais                         Int?                            @db.SmallInt
   id_titulo_nobreza               Int?                            @db.SmallInt
@@ -61,59 +74,72 @@ model pessoa {
   armador                         viagem[]                        @relation("armador")
   consignatario                   viagem[]                        @relation("consignatario")
   minibiografia                   minibiografia?
+
+  @@schema("mmrj")
 }
 
 model embarcacao {
-  id                              Int                             @id @default(autoincrement())
+  id                              Int                             @id @default(autoincrement()) @map("id_embarcacao")
   id_tipo_embarcacao              Int?                            @db.SmallInt
   nome                            String?                         @db.VarChar(100)
   id_pais                         Int?
-  observacao                      String?
   tipo_embarcacao                 tipo_embarcacao?                @relation(fields: [id_tipo_embarcacao], references: [id], onDelete: Cascade)
   pais                            pais?                           @relation(fields: [id_pais], references: [id])
   relacao_embarcacao_proprietario relac_embarcacao_proprietario[]
   viagem                          viagem[]
+
+  @@schema("mmrj")
 }
 
 model tipo_embarcacao {
-  id                Int                 @id @default(autoincrement())
+  id                Int                 @id @default(autoincrement()) @map("id_tipo_embarcacao")
   texto_descritivo  String
   tipo              String              @db.VarChar()
   embarcacao        embarcacao[]
   imagem_embarcacao imagem_embarcacao[]
+
+  @@schema("mmrj")
 }
 
 model imagem_embarcacao {
-  id                 Int             @id @default(autoincrement())
+  id                 Int             @id @default(autoincrement()) @map("id_imagem_embarcacao")
   imagem             String          @db.VarChar()
   id_tipo_embarcacao Int             @db.SmallInt
   tipo_embarcacao    tipo_embarcacao @relation(fields: [id_tipo_embarcacao], references: [id], onDelete: Cascade)
+
+  @@schema("mmrj")
 }
 
 model porto {
-  id             Int      @id @default(autoincrement())
+  id             Int      @id @default(autoincrement()) @map("id_porto")
   nome           String   @db.VarChar(70)
   id_pais        Int?     @db.SmallInt
   pais           pais?    @relation(fields: [id_pais], references: [id])
   viagem_origem  viagem[] @relation("porto_origem")
   viagem_destino viagem[] @relation("porto_destino")
   escala         escala[]
+
+  @@schema("mmrj")
 }
 
 model pais {
-  id                              Int                             @id @default(autoincrement())
-  pais                            String                          @db.VarChar(70)
+  id                              Int                             @id @default(autoincrement()) @map("id_pais")
+  nome                            String                          @db.VarChar(100)
   gentilico                       String                          @db.VarChar(70)
   porto                           porto[]
   pessoa                          pessoa[]
   relacao_embarcacao_proprietario relac_embarcacao_proprietario[]
   embarcacao                      embarcacao[]
+
+  @@schema("mmrj")
 }
 
 model titulo_nobreza {
   id     Int      @id @default(autoincrement())
   titulo String   @db.VarChar(20)
   pessoa pessoa[]
+
+  @@schema("mmrj")
 }
 
 model relac_embarcacao_proprietario {
@@ -126,10 +152,12 @@ model relac_embarcacao_proprietario {
   embarcacao      embarcacao @relation(fields: [id_embarcacao], references: [id], onDelete: Cascade)
   pais            pais       @relation(fields: [id_pais], references: [id])
   pessoa          pessoa     @relation(fields: [id_proprietario], references: [id])
+
+  @@schema("mmrj")
 }
 
 model viagem {
-  id                          Int                           @id @default(autoincrement())
+  id                          Int                           @id @default(autoincrement()) @map("id_viagem")
   id_embarcacao               Int?
   id_porto_origem             Int?                          @db.SmallInt
   id_porto_destino            Int?                          @db.SmallInt
@@ -140,7 +168,7 @@ model viagem {
   capitao_id                  Int?
   comandante_id               Int?
   observacoes                 String?                       @db.VarChar()
-  entrada_sahida              String?                       @db.VarChar(7)
+  entrada_saida               String?                       @db.VarChar(50)
   dias_viagem                 Int?
   data_chegada                DateTime?                     @db.Date()
   data_rio                    DateTime?                     @db.Date()
@@ -160,10 +188,12 @@ model viagem {
   comandante                  pessoa?                       @relation("comandante", fields: [comandante_id], references: [id])
   armador                     pessoa?                       @relation("armador", fields: [armador_id], references: [id])
   passageiro                  passageiro[]
+
+  @@schema("mmrj")
 }
 
 model escala {
-  id                      Int                       @id @default(autoincrement())
+  id                      Int                       @id @default(autoincrement()) @map("id_escala")
   id_viagem               Int                       @db.SmallInt
   id_porto                Int                       @db.SmallInt
   data_escala             DateTime?
@@ -175,13 +205,17 @@ model escala {
   porto                   porto?                    @relation(fields: [id_porto], references: [id])
   viagem                  viagem?                   @relation(fields: [id_viagem], references: [id])
   relac_mercadoria_escala relac_mercadoria_escala[]
+
+  @@schema("mmrj")
 }
 
 model mercadoria {
-  id                      Int                       @id @default(autoincrement())
+  id                      Int                       @id @default(autoincrement()) @map("id_mercadoria")
   nome                    String                    @db.VarChar(40)
   relac_mercadoria_viagem relac_mercadoria_viagem[]
   relac_mercadoria_escala relac_mercadoria_escala[]
+
+  @@schema("mmrj")
 }
 
 model unidade_de_medida {
@@ -189,6 +223,8 @@ model unidade_de_medida {
   unidade_medida          String                    @db.VarChar(15)
   relac_mercadoria_viagem relac_mercadoria_viagem[]
   relac_mercadoria_escala relac_mercadoria_escala[]
+
+  @@schema("mmrj")
 }
 
 model noticia {
@@ -196,6 +232,8 @@ model noticia {
   id_viagem Int    @db.SmallInt
   assunto   String
   viagem    viagem @relation(fields: [id_viagem], references: [id])
+
+  @@schema("mmrj")
 }
 
 model relac_viagem_referencia_doc {
@@ -205,12 +243,16 @@ model relac_viagem_referencia_doc {
   data_publicacao          DateTime
   referencia_documental    referencia_documental @relation(fields: [id_referencia_documental], references: [id], onDelete: Cascade)
   viagem                   viagem                @relation(fields: [id_viagem], references: [id])
+
+  @@schema("mmrj")
 }
 
 model referencia_documental {
   id                            Int                           @id @default(autoincrement())
   nome_periodico                String                        @db.VarChar(50)
   relacao_viagem_referencia_doc relac_viagem_referencia_doc[]
+
+  @@schema("mmrj")
 }
 
 model relac_mercadoria_escala {
@@ -224,10 +266,12 @@ model relac_mercadoria_escala {
   unidade_de_medida unidade_de_medida? @relation(fields: [id_unidade_medida], references: [id])
   mercadoria        mercadoria?        @relation(fields: [id_mercadoria], references: [id])
   escala            escala             @relation(fields: [id_escala], references: [id])
+
+  @@schema("mmrj")
 }
 
 model relac_mercadoria_viagem {
-  id                Int                @id @default(autoincrement())
+  id                Int                @id @default(autoincrement()) @map("id_relac_mercadoria_viagem")
   id_viagem         Int                @db.SmallInt
   id_mercadoria     Int                @db.SmallInt
   quantidade_origem Int?
@@ -236,6 +280,8 @@ model relac_mercadoria_viagem {
   viagem            viagem?            @relation(fields: [id_viagem], references: [id])
   mercadoria        mercadoria?        @relation(fields: [id_mercadoria], references: [id])
   unidade_de_medida unidade_de_medida? @relation(fields: [id_unidade_medida], references: [id])
+
+  @@schema("mmrj")
 }
 
 model minibiografia {
@@ -243,12 +289,16 @@ model minibiografia {
   id_pessoa Int?    @unique
   biografia String? @db.VarChar()
   pessoa    pessoa? @relation(fields: [id_pessoa], references: [id], onDelete: Cascade)
+
+  @@schema("mmrj")
 }
 
 model tipo_passageiro {
   id         Int          @id @default(autoincrement())
   tipo       String       @db.VarChar()
   passageiro passageiro[]
+
+  @@schema("mmrj")
 }
 
 model passageiro {
@@ -259,6 +309,8 @@ model passageiro {
   observacoes        String?          @db.VarChar()
   tipo_passageiro    tipo_passageiro? @relation(fields: [id_tipo_passageiro], references: [id], onDelete: Cascade)
   viagem             viagem?          @relation(fields: [id_viagem], references: [id], onDelete: Cascade)
+
+  @@schema("mmrj")
 }
 
 model arriba {
@@ -266,9 +318,7 @@ model arriba {
   id_viagem   Int     @db.SmallInt
   observacoes String? @db.VarChar()
   viagem      viagem  @relation(fields: [id_viagem], references: [id], onDelete: Cascade)
+
+  @@schema("mmrj")
 }
 
-enum Role {
-  EDITOR
-  ADMIN
-}

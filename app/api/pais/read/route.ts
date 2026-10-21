@@ -12,11 +12,11 @@ export async function GET(request: Request) {
   const result = await prisma.pais.findMany({
     select: {
       id: true,
-      pais: true,
+      nome: true,
       gentilico: true,
     },
     orderBy: {
-      pais: "asc",
+      nome: "asc",
     },
   });
 

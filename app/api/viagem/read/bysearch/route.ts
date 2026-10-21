@@ -34,7 +34,7 @@ export async function GET(req: Request) {
         ...(tipo && tipo !== 'none'
           ? [
               {
-                entrada_sahida: tipo?.toString(),
+                entrada_saida: tipo?.toString(),
               },
             ]
           : []),
@@ -46,7 +46,7 @@ export async function GET(req: Request) {
     select: {
       id: true,
       data_rio: true,
-      entrada_sahida: true,
+      entrada_saida: true,
 
       embarcacao: {
         select: {
@@ -82,7 +82,7 @@ export async function GET(req: Request) {
         ...(tipo && tipo !== 'none'
           ? [
               {
-                entrada_sahida: tipo?.toString(),
+                entrada_saida: tipo?.toString(),
               },
             ]
           : []),

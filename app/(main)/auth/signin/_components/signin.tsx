@@ -10,19 +10,42 @@ import { useState } from "react";
 import Turnstile, { useTurnstile } from "react-turnstile";
 
 export default function SignInPage() {
-  const [useremail, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState("");
+  const [captchaWarning, setCaptchaWarning] = useState(false);
+  const [captchaLoaded, setCaptchaLoaded] = useState(false);
+  const [captchaError, setCaptchaError] = useState(false);
   const turnstile = useTurnstile();
   const router = useRouter();
+  const canBypassCaptcha = process.env.NODE_ENV !== "production";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!token) {
+    const shouldBypassCaptcha = captchaError && canBypassCaptcha;
+
+    if (!token && !shouldBypassCaptcha) {
+      setCaptchaWarning(true);
+      toast({
+        title: "Captcha pendente",
+        variant: "destructive",
+        description: "Confirme o captcha para entrar.",
+        duration: 4000,
+      });
       return;
     }
+
+    if (shouldBypassCaptcha) {
+      toast({
+        title: "Captcha indisponivel",
+        description: "A continuar sem captcha em ambiente local.",
+        duration: 3500,
+      });
+    }
+
+    setCaptchaWarning(false);
     setLoading(true);
 
     try {
@@ -31,14 +54,14 @@ export default function SignInPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ useremail, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       if (!response.ok) {
         toast({
           title: "Erro",
           variant: "destructive",
-          description: "Email ou senha incorretos",
+          description: "Login name ou senha incorretos",
           duration: 5000,
         });
         return;
@@ -76,16 +99,16 @@ export default function SignInPage() {
           className="flex flex-col items-center w-full gap-4"
         >
           <Input
-            disabled={!token}
-            name="useremail"
-            type="email"
-            placeholder="Email"
+            disabled={loading}
+            name="username"
+            type="text"
+            placeholder="Login name"
             className="rounded-xl w-[50%]"
-            value={useremail}
-            onChange={(e) => setEmail(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <Input
-            disabled={!token}
+            disabled={loading}
             name="password"
             type="password"
             placeholder="Senha"
@@ -100,10 +123,48 @@ export default function SignInPage() {
             {loading && <Loader classProp="ml-2 w-6 h-6" />}
             {loading ? "Entrando..." : "Entrar"}
           </Button>
-          <Turnstile
-            sitekey="0x4AAAAAAAaieK38rD9jtI_y"
-            onVerify={(token) => setToken(token)}
-          />
+          <div className="w-[50%] min-h-[84px] flex items-center justify-center">
+            <Turnstile
+              sitekey="0x4AAAAAAAaieK38rD9jtI_y"
+              theme="light"
+              size="normal"
+              onLoad={() => {
+                setCaptchaLoaded(true);
+                setCaptchaError(false);
+              }}
+              onError={() => {
+                setCaptchaError(true);
+                setCaptchaLoaded(false);
+              }}
+              onVerify={(token) => {
+                setToken(token);
+                setCaptchaWarning(false);
+              }}
+              onExpire={() => {
+                setToken("");
+              }}
+            />
+          </div>
+          {!captchaLoaded && !captchaError && (
+            <p className="w-[50%] text-xs text-blue-100 text-center">
+              A carregar captcha...
+            </p>
+          )}
+          {captchaError && (
+            <p className="w-[50%] text-sm font-medium text-red-100 text-center">
+              Nao foi possivel carregar o captcha. Atualize a pagina e desative bloqueadores de conteudo para este site.
+            </p>
+          )}
+          {captchaError && canBypassCaptcha && (
+            <p className="w-[50%] text-xs font-medium text-blue-100 text-center">
+              Ambiente local detectado: pode entrar mesmo sem captcha.
+            </p>
+          )}
+          {captchaWarning && (
+            <p className="w-[50%] text-sm font-medium text-red-100 text-center">
+              Confirme o captcha para entrar.
+            </p>
+          )}
         </form>
       </div>
     </div>

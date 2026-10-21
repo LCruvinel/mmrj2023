@@ -39,7 +39,7 @@ function setHeaders(worksheet: any) {
 
 const setData = (worksheet: any, portos: Porto[]) => {
   portos.map((porto) => {
-    worksheet.addRow([porto.id, porto?.nome, porto?.pais?.pais]);
+    worksheet.addRow([porto.id, porto?.nome, porto?.pais?.nome]);
   });
 };
 

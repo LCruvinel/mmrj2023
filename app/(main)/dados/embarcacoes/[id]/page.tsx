@@ -19,29 +19,66 @@ async function getData(id: string) {
           imagem_embarcacao: true,
         },
       },
-      relacao_embarcacao_proprietario: {
-        include: {
-          pessoa: true,
-          pais: true,
-        },
-      },
       viagem: {
-        include: {
+        select: {
+          id: true,
+          data_rio: true,
+          entrada_saida: true,
           porto_origem: {
-            include: {
-              pais: true,
+            select: {
+              nome: true,
+              pais: {
+                select: {
+                  nome: true,
+                },
+              },
             },
           },
           porto_destino: {
-            include: {
-              pais: true,
+            select: {
+              nome: true,
+              pais: {
+                select: {
+                  nome: true,
+                },
+              },
             },
           },
         },
       },
     },
   });
-  return res;
+
+  if (!res) {
+    return null;
+  }
+
+  const pessoasRelacionadas = await prisma.$queryRaw<
+    Array<{ id_pessoa: number; nome: string | null; funcao: string | null }>
+  >`
+    SELECT DISTINCT
+      p."id_pessoa" AS "id_pessoa",
+      p."nome" AS "nome",
+      rpv."funcao" AS "funcao"
+    FROM "viagem" v
+    JOIN "relac_pessoa_viagem" rpv ON rpv."id_viagem" = v."id_viagem"
+    JOIN "pessoa" p ON p."id_pessoa" = rpv."id_pessoa"
+    WHERE v."id_embarcacao" = ${parseInt(id)}
+    ORDER BY p."nome"
+  `;
+
+  return {
+    ...res,
+    pessoas_via_viagem: pessoasRelacionadas.map((item) => ({
+      id: item.id_pessoa,
+      nome: item.nome ?? 'N/A',
+      funcao: item.funcao ?? 'N/A',
+      pessoa: {
+        id: item.id_pessoa,
+        nome: item.nome ?? 'N/A',
+      },
+    })),
+  };
 }
 
 export default async function VesselPage({

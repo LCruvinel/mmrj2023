@@ -1,4 +1,4 @@
-import { lucia, validateRequest } from "@/auth";
+import { createBlankSessionCookie, invalidateSession, validateRequest } from "@/auth";
 import { cookies } from "next/headers";
 
 export async function GET() {
@@ -7,9 +7,9 @@ export async function GET() {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  await lucia.invalidateSession(session.id);
+  await invalidateSession(session.id);
 
-  const sessionCookie = lucia.createBlankSessionCookie();
+  const sessionCookie = createBlankSessionCookie();
   cookies().set(
     sessionCookie.name,
     sessionCookie.value,

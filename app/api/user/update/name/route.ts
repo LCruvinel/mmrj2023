@@ -14,7 +14,7 @@ export async function PUT(req: Request) {
       id: user.id,
     },
     data: {
-      nome: nome,
+      username: nome,
     },
   });
   return Response.json(result);

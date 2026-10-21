@@ -357,7 +357,7 @@ export default function AddOwner({ mutate, embarcacaoId }: AddOwnerProps) {
                           {field.value
                             ? pais?.find(
                                 (pais) => pais.id.toString() === field.value
-                              )?.pais
+                              )?.nome
                             : 'Seleccionar País'}
                           <ChevronsUpDown className='w-4 h-4 ml-2 opacity-50 shrink-0' />
                         </Button>
@@ -371,14 +371,14 @@ export default function AddOwner({ mutate, embarcacaoId }: AddOwnerProps) {
                           <CommandList>
                             {pais?.map((pais) => (
                               <CommandItem
-                                value={pais.pais}
+                                value={pais.nome}
                                 key={pais.id}
                                 onSelect={() => {
                                   form.setValue('pais', pais.id.toString());
                                   setSelectPais(false);
                                 }}
                               >
-                                {pais.pais}
+                                {pais.nome}
                               </CommandItem>
                             ))}
                           </CommandList>

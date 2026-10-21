@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
-    "@lucia-auth/adapter-prisma": "^4.0.1",
     "@node-rs/argon2": "^1.8.3",
-    "@prisma/client": "^5.17.0",
+    "@prisma/adapter-pg": "^7.9.0",
+    "@prisma/client": "^7.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.1",
@@ -33,6 +33,7 @@
     "@react-three/fiber": "^8.16.8",
     "@types/mdx": "^2.0.13",
     "archiver": "^7.0.1",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -44,7 +45,6 @@
     "fumadocs-core": "^12.5.4",
     "fumadocs-mdx": "^8.2.34",
     "fumadocs-ui": "^12.5.4",
-    "lucia": "^3.2.0",
     "lucide-react": "^0.408.0",
     "next": "14.2.5",
     "next-themes": "^0.3.0",
@@ -80,7 +80,7 @@
     "eslint-config-next": "14.2.5",
     "postcss": "^8",
     "prettier": "^3.3.3",
-    "prisma": "^5.17.0",
+    "prisma": "^7.9.0",
     "tailwindcss": "^3.4.6",
     "typescript": "5.5.3"
   }

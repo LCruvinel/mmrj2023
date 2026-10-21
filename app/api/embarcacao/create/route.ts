@@ -2,7 +2,7 @@ import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
-  const { nome, tipo, observacao } = await req.json();
+  const { nome, tipo } = await req.json();
   const { user } = await validateRequest();
 
   if (!user) {
@@ -28,7 +28,6 @@ export async function POST(req: Request) {
   const result = await prisma.embarcacao.create({
     data: {
       nome: nome,
-      observacao: observacao,
       tipo_embarcacao: {
         connect: {
           id: Number(tipo),

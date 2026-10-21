@@ -17,7 +17,6 @@ export async function GET(req: Request) {
     select: {
       id: true,
       nome: true,
-      observacao: true,
       tipo_embarcacao: {
         select: {
           id: true,
@@ -33,7 +32,7 @@ export async function GET(req: Request) {
           data_fim: true,
           pais: {
             select: {
-              pais: true,
+              nome: true,
             },
           },
           pessoa: {
@@ -41,7 +40,7 @@ export async function GET(req: Request) {
               nome: true,
               pais: {
                 select: {
-                  pais: true,
+                  nome: true,
                 },
               },
               titulo_nobreza: {
@@ -57,14 +56,14 @@ export async function GET(req: Request) {
         select: {
           id: true,
           data_rio: true,
-          entrada_sahida: true,
+          entrada_saida: true,
           porto_origem: {
             select: {
               id: true,
               nome: true,
               pais: {
                 select: {
-                  pais: true,
+                  nome: true,
                 },
               },
             },
@@ -75,7 +74,7 @@ export async function GET(req: Request) {
               nome: true,
               pais: {
                 select: {
-                  pais: true,
+                  nome: true,
                 },
               },
             },
@@ -85,5 +84,5 @@ export async function GET(req: Request) {
     },
   });
 
-  return Response.json(result);
+  return Response.json(result ? { ...result, observacao: null } : result);
 }

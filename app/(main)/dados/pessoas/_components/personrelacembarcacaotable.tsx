@@ -56,7 +56,7 @@ export default function PersonRelacaoEmbarcacaoTable(props: {
               </TableCell>
 
               <TableCell className='px-4 py-2 text-md'>
-                {relacao.pais.pais}
+                {relacao.pais.nome}
               </TableCell>
             </TableRow>
           ))}

@@ -92,7 +92,7 @@ export default function TabelaPortos() {
                   {porto.nome}
                 </TableCell>
                 <TableCell className='font-medium'>
-                  {porto.pais?.pais}
+                  {porto.pais?.nome}
                 </TableCell>
                 <TableCell className='w-4'>
                   <Button

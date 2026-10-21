@@ -1,7 +1,7 @@
-import { lucia, validateRequest } from "@/auth";
+import { invalidateUserSessions, validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import sendEmailNotification from "@/lib/sendemail";
-import { hash } from "@node-rs/argon2";
+import { hash } from "bcryptjs";
 
 export async function PUT(req: Request) {
   const { id } = await req.json();
@@ -27,15 +27,9 @@ export async function PUT(req: Request) {
 
   const password = generatePass();
 
-  const passwordHash = await hash(password, {
-    // recommended minimum parameters
-    memoryCost: 19456,
-    timeCost: 2,
-    outputLen: 32,
-    parallelism: 1,
-  });
+  const passwordHash = await hash(password, 10);
 
-  await lucia.invalidateUserSessions(id);
+  await invalidateUserSessions(id);
 
   const result = await prisma.user.update({
     where: {
@@ -45,11 +39,11 @@ export async function PUT(req: Request) {
       password_hash: passwordHash,
     },
     select: {
-      email: true,
+      username: true,
     },
   });
   await sendEmailNotification(
-    result.email,
+    result.username,
     "Um Administrador resetou a sua senha.",
     `${password}`,
   );

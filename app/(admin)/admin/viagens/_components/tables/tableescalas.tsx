@@ -6,9 +6,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import tz from 'dayjs/plugin/timezone';
 import { useState } from 'react';
 import MercadoriaEscalasDrawer from '../mercadoriaescaladrawer';
 import { XIcon } from 'lucide-react';
@@ -22,9 +19,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
-
-dayjs.extend(utc);
-dayjs.extend(tz);
 
 export default function TableEscalas(props: {
   escalas: Escala[] | undefined;
@@ -61,12 +55,7 @@ export default function TableEscalas(props: {
       <Table className='border-b'>
         <TableHeader className='p-2 text-xs bg-blue-200 border-t-0 dark:bg-slate-900 '>
           <TableRow className='rounded-ss-xl'>
-            <TableHead>Data</TableHead>
-            <TableHead>Ano</TableHead>
-            <TableHead>Dias no Porto</TableHead>
             <TableHead>Porto</TableHead>
-            <TableHead>Entraram</TableHead>
-            <TableHead>Saíram</TableHead>
             <TableHead></TableHead>
           </TableRow>
         </TableHeader>
@@ -82,23 +71,8 @@ export default function TableEscalas(props: {
                     setOpen(true);
                   }}
                 >
-                  <TableCell className='text-xs font-medium'>
-                    {dayjs.tz(escala.data_escala, 'UTC').format('DD/MM/YYYY')}
-                  </TableCell>
-                  <TableCell className='text-xs font-medium'>
-                    {escala.ano}
-                  </TableCell>
-                  <TableCell className='text-xs font-medium'>
-                    {escala.dias_porto}
-                  </TableCell>
                   <TableCell className='text-xs font-medium '>
-                    {escala.porto.nome}
-                  </TableCell>
-                  <TableCell className='text-xs font-medium'>
-                    {escala.entrada_de_passageiros}
-                  </TableCell>
-                  <TableCell className='text-xs font-medium'>
-                    {escala.saida_de_passageiros}
+                    {escala.porto?.nome || 'N/A'}
                   </TableCell>
                   <TableCell className='w-4'>
                     <Button
@@ -116,7 +90,7 @@ export default function TableEscalas(props: {
                 </TableRow>
               </HoverCardTrigger>
               <HoverCardContent>
-                <p>{escala.observacoes || 'Nenhuma Observação'}</p>
+                <p>Escala {escala.id}</p>
               </HoverCardContent>
             </HoverCard>
           ))}

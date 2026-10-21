@@ -2,7 +2,7 @@ import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 
 export async function PUT(req: Request) {
-  const { id, nome, email, role } = await req.json();
+  const { id, email, role } = await req.json();
   const { user } = await validateRequest();
 
   if (!user || user.role !== "ADMIN") {
@@ -14,9 +14,8 @@ export async function PUT(req: Request) {
       id: id,
     },
     data: {
-      nome: nome,
-      email: email,
-      role: role,
+      username: email,
+      role: role.toLowerCase(),
     },
   });
   return Response.json(result);

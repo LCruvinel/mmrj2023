@@ -72,7 +72,7 @@ const formSchema = z.object({
   id_capitao: z.number().nullable(),
   id_armador: z.number().nullable(),
   id_mestre: z.number().nullable(),
-  entrada_sahida: z.string().nullable(),
+  entrada_saida: z.string().nullable(),
 });
 
 export default function BotaoNovaViagem() {
@@ -109,7 +109,7 @@ export default function BotaoNovaViagem() {
       id_capitao: null,
       id_armador: null,
       id_mestre: null,
-      entrada_sahida: null,
+      entrada_saida: null,
     },
   });
 
@@ -147,7 +147,7 @@ export default function BotaoNovaViagem() {
 
   async function handleSubmit(values: z.infer<typeof formSchema>) {
     setSubmitting(true);
-    if (values.data_rio || values.id_embarcacao || values.entrada_sahida)
+    if (values.data_rio || values.id_embarcacao || values.entrada_saida)
       try {
         await fetcher('/api/viagem/create', {
           method: 'POST',
@@ -413,12 +413,12 @@ export default function BotaoNovaViagem() {
 
               <FormField
                 control={form.control}
-                name='entrada_sahida'
+                name='entrada_saida'
                 render={({ field }) => (
                   <FormItem className='flex flex-col grow'>
                     <FormLabel>Tipo</FormLabel>
                     <Select
-                      name='entrada_sahida'
+                      name='entrada_saida'
                       onValueChange={field.onChange}
                       // defaultValue={field.value?.toString()}
                     >
@@ -480,11 +480,11 @@ export default function BotaoNovaViagem() {
                                 )?.nome +
                                 (portos?.find(
                                   (porto) => porto.id === field.value
-                                )?.pais?.pais
+                                )?.pais?.nome
                                   ? ' | ' +
                                     portos?.find(
                                       (porto) => porto.id === field.value
-                                    )?.pais?.pais
+                                    )?.pais?.nome
                                   : '')
                               : 'Selecionar Porto'}
                             <ChevronsUpDownIcon className='w-4 h-4 ml-2 opacity-50 shrink-0' />
@@ -515,7 +515,7 @@ export default function BotaoNovaViagem() {
                                   }}
                                 >
                                   {porto.nome}{' '}
-                                  {porto.pais?.pais && ' | ' + porto.pais.pais}
+                                  {porto.pais?.nome && ' | ' + porto.pais.nome}
                                 </CommandItem>
                               ))}
                             </CommandList>
@@ -565,11 +565,11 @@ export default function BotaoNovaViagem() {
                                 )?.nome +
                                 (portos?.find(
                                   (porto) => porto.id === field.value
-                                )?.pais?.pais
+                                )?.pais?.nome
                                   ? ' | ' +
                                     portos?.find(
                                       (porto) => porto.id === field.value
-                                    )?.pais?.pais
+                                    )?.pais?.nome
                                   : '')
                               : 'Selecionar Porto'}
                             <ChevronsUpDownIcon className='w-4 h-4 ml-2 opacity-50 shrink-0' />
@@ -599,7 +599,7 @@ export default function BotaoNovaViagem() {
                                   }}
                                 >
                                   {porto.nome}{' '}
-                                  {porto.pais?.pais && ' | ' + porto.pais.pais}
+                                  {porto.pais?.nome && ' | ' + porto.pais.nome}
                                 </CommandItem>
                               ))}
                             </CommandList>
@@ -685,7 +685,7 @@ export default function BotaoNovaViagem() {
                                     {embarcacao.nome} |{' '}
                                     {embarcacao.tipo_embarcacao?.tipo}{' '}
                                     {embarcacao.pais
-                                      ? ' | ' + embarcacao.pais?.pais
+                                      ? ' | ' + embarcacao.pais?.nome
                                       : ''}
                                   </CommandItem>
                                 );

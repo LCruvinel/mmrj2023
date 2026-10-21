@@ -65,7 +65,7 @@ function TabelaPessoasContent() {
                   {pessoa?.titulo_nobreza?.titulo}
                 </TableCell>
                 <TableCell className="font-medium">
-                  {pessoa.pais?.pais}
+                  {pessoa.pais?.nome}
                 </TableCell>
               </TableRow>
             ))}

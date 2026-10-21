@@ -37,6 +37,27 @@ type ViagensAndTotal = {
   total: number;
 };
 
+function formatStoredDateText(value: unknown) {
+  if (value === null || value === undefined) return 'N/A';
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return 'N/A';
+
+    if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) {
+      return trimmed.slice(0, 10);
+    }
+
+    return trimmed;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? 'N/A' : value.toISOString().slice(0, 10);
+  }
+
+  return String(value);
+}
+
 export default function TripsTable() {
   const [activePage, setPage] = useState(1);
   const [searchText, setSearchText] = useState("");
@@ -134,12 +155,10 @@ export default function TripsTable() {
                   {viagem.id}
                 </TableCell> */}
                 <TableCell className="font-medium">
-                  {viagem.data_rio
-                    ? dayjs.tz(viagem.data_rio, "UTC").format("DD/MM/YYYY")
-                    : "N/A"}
+                  {formatStoredDateText(viagem.data_rio)}
                 </TableCell>
                 <TableCell className="font-medium">
-                  {viagem.entrada_sahida}
+                  {viagem.entrada_saida}
                 </TableCell>
                 <TableCell className="font-medium">
                   {viagem.embarcacao.nome}

@@ -10,12 +10,22 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
-  const result = await prisma.viagem.findUnique({
+
+  const viagem = await prisma.viagem.findUnique({
     where: {
       id: Number(id),
     },
-
-    include: {
+    select: {
+      id: true,
+      data_viagem: true,
+      dias_viagem: true,
+      entrada_saida: true,
+      dias_porto_destino: true,
+      dias_porto_origem: true,
+      observacoes: true,
+      id_embarcacao: true,
+      id_porto_origem: true,
+      id_porto_destino: true,
       embarcacao: {
         include: {
           tipo_embarcacao: {
@@ -35,7 +45,6 @@ export async function GET(req: Request) {
           pais: true,
         },
       },
-
       mestre: true,
       capitao: true,
       comandante: true,
@@ -44,21 +53,16 @@ export async function GET(req: Request) {
       escala: {
         select: {
           id: true,
-          ano: true,
-          observacoes: true,
-          data_escala: true,
-          dias_porto: true,
+          id_viagem: true,
+          id_porto: true,
           porto: {
             select: {
               id: true,
               nome: true,
             },
           },
-          entrada_de_passageiros: true,
-          saida_de_passageiros: true,
         },
       },
-
       passageiro: {
         select: {
           id: true,
@@ -71,7 +75,6 @@ export async function GET(req: Request) {
           observacoes: true,
         },
       },
-
       relac_mercadoria_viagem: {
         include: {
           mercadoria: true,
@@ -104,5 +107,20 @@ export async function GET(req: Request) {
       },
     },
   });
-  return Response.json(result);
+
+  const rawDates = await prisma.$queryRaw<{ data_chegada: string | null; data_rio: string | null }[]>`
+    SELECT
+      "data_chegada"::text AS "data_chegada",
+      "data_rio"::text AS "data_rio"
+    FROM "viagem"
+    WHERE "id_viagem" = ${Number(id)}
+  `;
+
+  const rawDateValues = rawDates[0] ?? { data_chegada: null, data_rio: null };
+
+  return Response.json({
+    ...viagem,
+    data_chegada: rawDateValues.data_chegada,
+    data_rio: rawDateValues.data_rio,
+  });
 }

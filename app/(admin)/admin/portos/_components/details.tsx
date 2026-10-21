@@ -103,7 +103,7 @@ export default function PortoDetails(props: {
                 <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
                   País
                 </div>
-                <div className='p-2 text-xs'>{porto?.pais?.pais}</div>
+                <div className='p-2 text-xs'>{porto?.pais?.nome}</div>
               </div>
             </div>
             <div className='flex flex-col w-full border gap-1 rounded-xl'>

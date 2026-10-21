@@ -23,6 +23,27 @@ interface ViagensTableProps {
   embarcacao: Embarcacao;
 }
 
+function formatStoredDateText(value: unknown) {
+  if (value === null || value === undefined) return 'N/A';
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return 'N/A';
+
+    if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) {
+      return trimmed.slice(0, 10);
+    }
+
+    return trimmed;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? 'N/A' : value.toISOString().slice(0, 10);
+  }
+
+  return String(value);
+}
+
 export const PessoasTable: React.FC<ViagensTableProps> = ({ embarcacao }) => {
   const [activePageViagens, setActivePageViagens] = useState(1);
   const chunkedviagens = chunk(embarcacao?.viagem ?? [], 5);
@@ -42,23 +63,21 @@ export const PessoasTable: React.FC<ViagensTableProps> = ({ embarcacao }) => {
           {viagens?.map((viagem) => (
             <TableRow key={viagem.id}>
               <TableCell className='text-xs'>
-                {viagem.data_rio
-                  ? dayjs.tz(viagem.data_rio, 'UTC').format('DD/MM/YYYY')
-                  : 'N/A'}
+                {formatStoredDateText(viagem.data_rio)}
               </TableCell>
-              <TableCell className='text-xs'>{viagem.entrada_sahida}</TableCell>
+              <TableCell className='text-xs'>{viagem.entrada_saida}</TableCell>
               <TableCell className='text-xs'>
                 {viagem.porto_origem?.nome ? viagem.porto_origem?.nome : 'N/A'}
-                {viagem.porto_origem?.pais?.pais
-                  ? ' | ' + viagem.porto_origem?.pais?.pais
+                {viagem.porto_origem?.pais?.nome
+                  ? ' | ' + viagem.porto_origem?.pais?.nome
                   : ''}
               </TableCell>
               <TableCell className='text-xs'>
                 {viagem.porto_destino?.nome
                   ? viagem.porto_destino?.nome
                   : 'N/A'}
-                {viagem.porto_destino?.pais?.pais
-                  ? ' | ' + viagem.porto_destino?.pais?.pais
+                {viagem.porto_destino?.pais?.nome
+                  ? ' | ' + viagem.porto_destino?.pais?.nome
                   : ''}
               </TableCell>
             </TableRow>

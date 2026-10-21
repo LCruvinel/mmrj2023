@@ -28,9 +28,7 @@ export default function TablePassageiros(props: {
       <Table className='border-b'>
         <TableHeader className='p-2 text-xs bg-blue-200 border-t-0 dark:bg-slate-900 '>
           <TableRow className='rounded-ss-xl'>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Total</TableHead>
-            <TableHead>Observações</TableHead>
+            <TableHead>Nome</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -40,28 +38,14 @@ export default function TablePassageiros(props: {
               key={passageiro.id}
             >
               <TableCell className='text-xs font-medium'>
-                {passageiro?.tipo_passageiro?.tipo}
-              </TableCell>
-              <TableCell className='text-xs'>{passageiro.total}</TableCell>
-              <TableCell className='text-xs'>
-                {passageiro.observacoes}
+                {(passageiro as any)?.nome ||
+                  passageiro?.tipo_passageiro?.tipo ||
+                  'N/A'}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
 
-        <TableFooter>
-          <TableRow>
-            <TableCell></TableCell>
-            <TableCell colSpan={3} className='text-xs font-bold'>
-              Total:{' '}
-              {passageiros?.reduce(
-                (acc, passageiro) => acc + (passageiro.total || 0),
-                0
-              ) || 0}
-            </TableCell>
-          </TableRow>
-        </TableFooter>
         {passageiros?.length === 0 && (
           <TableCaption>
             Não registámos qualquer passageiro nesta viagem

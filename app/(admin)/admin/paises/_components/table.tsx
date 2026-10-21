@@ -97,7 +97,7 @@ export default function TabelaPaises() {
                 key={pais.id}
               >
                 {/* <TableCell className='w-10 font-medium'>{pais.id}</TableCell> */}
-                <TableCell className="font-medium">{pais.pais}</TableCell>
+                <TableCell className="font-medium">{pais.nome}</TableCell>
                 <TableCell className="font-medium">{pais.gentilico}</TableCell>
                 <TableCell className="w-4">
                   <div className="flex gap-2">
@@ -154,7 +154,7 @@ export default function TabelaPaises() {
         open={openEdit}
         setOpen={setOpenEdit}
         id_pais={paisId}
-        nome={paises?.find((pais) => pais.id === paisId)?.pais}
+        nome={paises?.find((pais) => pais.id === paisId)?.nome}
         gentilico={paises?.find((pais) => pais.id === paisId)?.gentilico}
         mutate={mutate}
       />

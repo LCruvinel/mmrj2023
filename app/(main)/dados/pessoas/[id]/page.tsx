@@ -7,23 +7,23 @@ async function getData(id: string) {
     where: {
       id: parseInt(id),
     },
-    include: {
-      titulo_nobreza: true,
-      minibiografia: true,
-      relacao_pessoa_cargo: {
-        include: {
-          cargo: true,
-        },
-      },
-      relacao_embarcacao_proprietario: {
-        include: {
-          embarcacao: true,
-          pais: true,
-        },
-      },
+    select: {
+      id: true,
+      nome: true,
     },
   });
-  return res;
+
+  if (!res) {
+    return null;
+  }
+
+  return {
+    ...res,
+    titulo_nobreza: null,
+    minibiografia: null,
+    relacao_pessoa_cargo: [],
+    relacao_embarcacao_proprietario: [],
+  };
 }
 
 export default async function PersonPage({

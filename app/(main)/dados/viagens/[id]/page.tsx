@@ -4,63 +4,201 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import tz from 'dayjs/plugin/timezone';
 import TablePassageiros from '../_components/tables/tablepassageiros';
 import TableEscalas from '../_components/tables/tableescalas';
-import TableArribas from '../_components/tables/tablearribas';
 import TableRefDocumental from '../_components/tables/tablerefdoc';
 import TableMercadorias from '../_components/tables/tablemercadorias';
 import TableNews from '../_components/tables/tablenews';
 import prisma from '@/lib/prisma';
 
-dayjs.extend(utc);
-dayjs.extend(tz);
+function formatStoredDateText(value: unknown) {
+  if (value === null || value === undefined) return 'N/A';
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return 'N/A';
+
+    if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) {
+      return trimmed.slice(0, 10);
+    }
+
+    return trimmed;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? 'N/A' : value.toISOString().slice(0, 10);
+  }
+
+  return String(value);
+}
+
+function renderDbDate(value: unknown) {
+  return formatStoredDateText(value);
+}
 
 async function getData(id: string) {
   const res = await prisma.viagem.findUnique({
     where: {
       id: parseInt(id),
     },
-    include: {
-      armador: true,
-      capitao: true,
-      comandante: true,
-      consignatario: true,
+    select: {
+      id: true,
+      entrada_saida: true,
+      dias_viagem: true,
       embarcacao: {
-        include: {
+        select: {
+          nome: true,
           tipo_embarcacao: {
-            include: {
+            select: {
+              tipo: true,
+              texto_descritivo: true,
               imagem_embarcacao: true,
             },
           },
         },
       },
-      escala: true,
-      noticia: true,
-      passageiro: {
-        include: {
-          tipo_passageiro: true,
-        },
-      },
       porto_destino: {
-        include: {
-          pais: true,
+        select: {
+          nome: true,
+          pais: {
+            select: {
+              nome: true,
+            },
+          },
         },
       },
       porto_origem: {
-        include: {
-          pais: true,
+        select: {
+          nome: true,
+          pais: {
+            select: {
+              nome: true,
+            },
+          },
         },
       },
-      relac_mercadoria_viagem: true,
-      relac_viagem_referencia_doc: true,
-      arriba: true,
+      escala: {
+        select: {
+          id: true,
+          id_viagem: true,
+          id_porto: true,
+          porto: {
+            select: {
+              id: true,
+              nome: true,
+            },
+          },
+        },
+      },
+      relac_mercadoria_viagem: {
+        select: {
+          id: true,
+          id_mercadoria: true,
+          mercadoria: {
+            select: {
+              id: true,
+              nome: true,
+            },
+          },
+        },
+      },
     },
   });
 
-  return res;
+  if (!res) {
+    return null;
+  }
+
+  const rawDates = await prisma.$queryRaw<{ data_chegada: string | null; data_rio: string | null }[]>`
+    SELECT
+      "data_chegada"::text AS "data_chegada",
+      "data_rio"::text AS "data_rio"
+    FROM "viagem"
+    WHERE "id_viagem" = ${parseInt(id)}
+  `;
+
+  const rawDateValues = rawDates[0] ?? { data_chegada: null, data_rio: null };
+
+  const passageirosRaw = await prisma.$queryRaw<
+    Array<{ id_relac_pessoa_viagem: number; nome: string | null }>
+  >`
+    SELECT
+      rpv."id_relac_pessoa_viagem" AS "id_relac_pessoa_viagem",
+      p."nome" AS "nome"
+    FROM "relac_pessoa_viagem" rpv
+    JOIN "pessoa" p ON p."id_pessoa" = rpv."id_pessoa"
+    WHERE rpv."id_viagem" = ${parseInt(id)}
+      AND lower(rpv."funcao") = 'passageiro'
+  `;
+
+  const tripulacaoRaw = await prisma.$queryRaw<
+    Array<{ funcao: string | null; nome: string | null }>
+  >`
+    SELECT
+      rpv."funcao" AS "funcao",
+      p."nome" AS "nome"
+    FROM "relac_pessoa_viagem" rpv
+    JOIN "pessoa" p ON p."id_pessoa" = rpv."id_pessoa"
+    WHERE rpv."id_viagem" = ${parseInt(id)}
+  `;
+
+  const normalizeFuncao = (value: string | null | undefined) => {
+    if (!value) return '';
+
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z\s]/g, '')
+      .trim()
+      .toLowerCase();
+  };
+
+  const tripulacaoPorCargo = Object.fromEntries(
+    tripulacaoRaw
+      .filter((item) => item.funcao && item.nome)
+      .map((item) => {
+        const funcao = normalizeFuncao(item.funcao);
+        const chave =
+          funcao === 'comandante'
+            ? 'comandante'
+            : funcao === 'capitao'
+              ? 'capitao'
+              : funcao === 'armador'
+                ? 'armador'
+                : funcao === 'mestre'
+                  ? 'mestre'
+                  : funcao === 'consignatario' || funcao === 'cosignatario'
+                    ? 'consignatario'
+                    : funcao;
+
+        return [chave, String(item.nome).trim()];
+      })
+  );
+
+  return {
+    ...res,
+    data_rio: rawDateValues.data_rio,
+    data_chegada: rawDateValues.data_chegada,
+    data_viagem: null,
+    dias_porto_origem: null,
+    dias_porto_destino: null,
+    armador: null,
+    capitao: null,
+    comandante: null,
+    mestre: null,
+    consignatario: null,
+    passageiro: passageirosRaw.map((item) => ({
+      id: Number(item.id_relac_pessoa_viagem),
+      nome: item.nome ?? 'N/A',
+      tipo_passageiro: null,
+      total: null,
+      observacoes: null,
+    })),
+    arriba: [],
+    noticia: [],
+    relac_viagem_referencia_doc: [],
+    tripulacao: tripulacaoPorCargo,
+  };
 }
 
 export default async function TripPage({
@@ -71,6 +209,14 @@ export default async function TripPage({
   };
 }) {
   const viagem = (await getData(params.id)) as unknown as Viagem;
+  const tripulacao = ((viagem as any)?.tripulacao ?? {}) as Record<string, string>;
+  const tripulacaoNome = (chave: string) => tripulacao[chave] || 'N/A';
+  const destinoValor =
+    viagem?.entrada_saida?.trim().toLowerCase() === 'arribada'
+      ? 'Arribada (reparos)'
+      : viagem?.porto_destino?.nome && viagem?.porto_destino?.pais?.nome
+        ? `${viagem.porto_destino.nome} | ${viagem.porto_destino.pais.nome}`
+        : 'N/A';
 
   return (
     <div className='p-1 md:p-4 mt-10 lg:mx-24 bg-white rounded-xl flex flex-col gap-2 shadow-2xl dark:bg-slate-700'>
@@ -78,12 +224,10 @@ export default async function TripPage({
         <div className='flex flex-wrap gap-2'>
           <div className='flex flex-col border gap-1 rounded-xl grow'>
             <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
-              Data de Partida
+              Data Rio
             </div>
             <div className='p-2 text-xs'>
-              {viagem?.data_viagem
-                ? dayjs.tz(viagem.data_viagem, 'UTC').format('DD/MM/YYYY')
-                : 'N/A'}
+              {formatStoredDateText(viagem?.data_rio)}
             </div>
           </div>
 
@@ -95,7 +239,7 @@ export default async function TripPage({
               {viagem?.porto_origem?.nome
                 ? viagem?.porto_origem?.nome +
                   ' | ' +
-                  viagem?.porto_origem?.pais?.pais
+                  viagem?.porto_origem?.pais?.nome
                 : 'N/A'}
             </div>
           </div>
@@ -115,9 +259,7 @@ export default async function TripPage({
               Data de Chegada
             </div>
             <div className='p-2 text-xs'>
-              {viagem?.data_chegada
-                ? dayjs.tz(viagem.data_chegada, 'UTC').format('DD/MM/YYYY')
-                : 'N/A'}{' '}
+              {renderDbDate(viagem?.data_chegada)}
             </div>
           </div>
 
@@ -125,11 +267,7 @@ export default async function TripPage({
             <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
               Porto de Destino
             </div>
-            <div className='p-2 text-xs'>
-              {viagem?.porto_destino?.nome +
-                ' | ' +
-                viagem?.porto_destino?.pais?.pais}
-            </div>
+            <div className='p-2 text-xs'>{destinoValor}</div>
           </div>
           <div className='flex flex-col border gap-1 rounded-xl grow'>
             <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
@@ -144,19 +282,13 @@ export default async function TripPage({
         <div className='flex flex-wrap gap-2'>
           <div className='flex flex-col border gap-1 rounded-xl grow'>
             <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
-              Data Rio
-            </div>
-            <div className='p-2 text-xs'>
-              {viagem?.data_rio
-                ? dayjs.tz(viagem.data_rio, 'UTC').format('DD/MM/YYYY')
-                : 'N/A'}{' '}
-            </div>
-          </div>
-          <div className='flex flex-col border gap-1 rounded-xl grow'>
-            <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
               Dias de Viagem
             </div>
-            <div className='p-2 text-xs'>{viagem?.dias_viagem}</div>
+            <div className='p-2 text-xs'>
+              {viagem?.dias_viagem && viagem.dias_viagem !== 0
+                ? viagem.dias_viagem
+                : 'N/A'}
+            </div>
           </div>
           {/* <div className='flex flex-col border gap-1 rounded-xl grow'>
                 <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
@@ -244,32 +376,40 @@ export default async function TripPage({
                   <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
                     Comandante
                   </div>
-                  <div className='p-2 text-xs'>{viagem?.comandante?.nome}</div>
+                  <div className='p-2 text-xs'>
+                    {tripulacaoNome('comandante')}
+                  </div>
                 </div>
                 <div className='flex flex-col border gap-1 rounded-xl grow'>
                   <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
                     Capitão
                   </div>
-                  <div className='p-2 text-xs'>{viagem?.capitao?.nome}</div>
+                  <div className='p-2 text-xs'>
+                    {tripulacaoNome('capitao')}
+                  </div>
                 </div>
                 <div className='flex flex-col border gap-1 rounded-xl grow'>
                   <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
                     Armador
                   </div>
-                  <div className='p-2 text-xs'>{viagem?.armador?.nome}</div>
+                  <div className='p-2 text-xs'>
+                    {tripulacaoNome('armador')}
+                  </div>
                 </div>
                 <div className='flex flex-col border gap-1 rounded-xl grow'>
                   <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
                     Mestre
                   </div>
-                  <div className='p-2 text-xs'>{viagem?.mestre?.nome}</div>
+                  <div className='p-2 text-xs'>
+                    {tripulacaoNome('mestre')}
+                  </div>
                 </div>
                 <div className='flex flex-col border gap-1 rounded-xl grow'>
                   <div className='p-2 text-sm bg-blue-200 dark:bg-slate-900 rounded-ss-xl rounded-se-xl'>
-                    Cosignatario
+                    Cosignatário
                   </div>
                   <div className='p-2 text-xs'>
-                    {viagem?.consignatario?.nome}
+                    {tripulacaoNome('consignatario')}
                   </div>
                 </div>
               </div>
@@ -291,13 +431,6 @@ export default async function TripPage({
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value='arribas' className='w-full'>
-            <AccordionTrigger>Arribas</AccordionTrigger>
-            <AccordionContent>
-              <TableArribas arribas={viagem?.arriba} viagem_id={viagem?.id} />
-            </AccordionContent>
-          </AccordionItem>
-
           <AccordionItem value='cargo' className='w-full'>
             <AccordionTrigger>Mercadoria</AccordionTrigger>
             <AccordionContent>
@@ -305,21 +438,6 @@ export default async function TripPage({
                 mercadorias={viagem?.relac_mercadoria_viagem}
                 viagem_id={viagem?.id}
               />
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value='docref' className='w-full'>
-            <AccordionTrigger>Referências Documentais</AccordionTrigger>
-            <AccordionContent>
-              <TableRefDocumental
-                viagem_id={viagem?.id}
-                refdocs={viagem?.relac_viagem_referencia_doc}
-              />
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value='news' className='w-full'>
-            <AccordionTrigger>Notícias</AccordionTrigger>
-            <AccordionContent>
-              <TableNews news={viagem?.noticia} viagem_id={viagem?.id} />
             </AccordionContent>
           </AccordionItem>
         </Accordion>

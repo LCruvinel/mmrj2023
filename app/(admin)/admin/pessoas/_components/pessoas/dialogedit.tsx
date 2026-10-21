@@ -71,7 +71,7 @@ export default function DialogEditPessoa(props: {
       id: pessoa?.id,
       nome: pessoa?.nome,
       titulo_nobreza: pessoa?.titulo_nobreza?.titulo,
-      pais: pessoa?.pais?.pais,
+      pais: pessoa?.pais?.nome,
     },
   });
 
@@ -222,7 +222,7 @@ export default function DialogEditPessoa(props: {
                           {field.value
                             ? pais?.find(
                                 (pais) => pais.id.toString() === field.value
-                              )?.pais
+                              )?.nome
                             : 'Seleccionar País'}
                           <ChevronsUpDown className='w-4 h-4 ml-2 opacity-50 shrink-0' />
                         </Button>
@@ -236,14 +236,14 @@ export default function DialogEditPessoa(props: {
                           <CommandList>
                             {pais?.map((pais) => (
                               <CommandItem
-                                value={pais.pais}
+                                value={pais.nome}
                                 key={pais.id}
                                 onSelect={() => {
                                   form.setValue('pais', pais.id.toString());
                                   setSelectPais(false);
                                 }}
                               >
-                                {pais.pais}
+                                {pais.nome}
                               </CommandItem>
                             ))}
                           </CommandList>

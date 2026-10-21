@@ -279,14 +279,14 @@ export async function GET() {
         nome: true,
         pais: {
           select: {
-            pais: true,
+            nome: true,
           },
         },
       },
     });
     portoWithMostEscalas.count = queryPortoWithMostEscalas[0]._count._all;
     portoWithMostEscalas.name = queryPorto?.nome;
-    portoWithMostEscalas.pais = queryPorto?.pais?.pais;
+    portoWithMostEscalas.pais = queryPorto?.pais?.nome;
   }
 
   //viagem com mais total de passageiros
@@ -331,7 +331,8 @@ export async function GET() {
   });
 
   const top5Embarcacoes = await Promise.all(
-    topEmbarcacoesWithMostViagens.map(async (item) => {
+    topEmbarcacoesWithMostViagens.map(
+      async (item: { id_embarcacao: number | null; _count: { _all: number } }) => {
       const embarcacao = await prisma.embarcacao.findUnique({
         where: {
           id: item.id_embarcacao || undefined,
@@ -344,7 +345,8 @@ export async function GET() {
         name: embarcacao?.nome || 'Desconhecida',
         viagens: item._count._all,
       };
-    })
+      }
+    )
   );
 
   // países com mais portos
@@ -362,20 +364,22 @@ export async function GET() {
   });
 
   const top5Paises = await Promise.all(
-    topPaisesWithMostPortos.map(async (item) => {
+    topPaisesWithMostPortos.map(
+      async (item: { id_pais: number | null; _count: { _all: number } }) => {
       const pais = await prisma.pais.findUnique({
         where: {
           id: item.id_pais || undefined,
         },
         select: {
-          pais: true,
+          nome: true,
         },
       });
       return {
-        name: pais?.pais || 'Desconhecido',
+        name: pais?.nome || 'Desconhecido',
         portos: item._count._all,
       };
-    })
+      }
+    )
   );
 
   // top 5 tipos de embarcação mais populares
@@ -394,7 +398,8 @@ export async function GET() {
   });
 
   const top5TipoEmbarcacao = await Promise.all(
-    topTipoEmbarcacao.map(async (item) => {
+    topTipoEmbarcacao.map(
+      async (item: { id_tipo_embarcacao: number | null; _count: { _all: number } }) => {
       const tipoEmbarcacao = await prisma.tipo_embarcacao.findUnique({
         where: {
           id: item.id_tipo_embarcacao || undefined,
@@ -407,7 +412,8 @@ export async function GET() {
         name: tipoEmbarcacao?.tipo || 'Desconhecido',
         embarcacoes: item._count._all,
       };
-    })
+      }
+    )
   );
 
   // top 5mercadorias mais transportadas

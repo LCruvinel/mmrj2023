@@ -14,14 +14,14 @@ export async function GET(req: Request) {
 
   const result = await prisma.pais.findMany({
     where: {
-      pais: { startsWith: pais?.toString(), mode: "insensitive" },
+      nome: { startsWith: pais?.toString(), mode: "insensitive" },
     },
     select: {
       id: true,
-      pais: true,
+      nome: true,
     },
     orderBy: {
-      pais: "asc",
+      nome: "asc",
     },
   });
   return Response.json(result);

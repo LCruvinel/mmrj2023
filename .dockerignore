@@ -1,7 +1,18 @@
 Dockerfile
 .dockerignore
+docker-compose.yml
 node_modules
 npm-debug.log
 README.md
 .next
 .git
+.vscode
+*.tsbuildinfo
+
+# Secrets must be passed at runtime (env_file / -e), never baked into the image
+.env
+.env*.local
+
+# Not needed for the build
+Scripts_Antigos
+docs

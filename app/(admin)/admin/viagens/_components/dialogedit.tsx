@@ -53,8 +53,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-var customParseFormat = require('dayjs/plugin/customParseFormat');
-dayjs.extend(customParseFormat);
 import { ptBR } from 'date-fns/locale';
 
 const formSchema = z.object({
@@ -74,7 +72,7 @@ const formSchema = z.object({
   id_capitao: z.number().nullable(),
   id_armador: z.number().nullable(),
   id_mestre: z.number().nullable(),
-  entrada_sahida: z.string().nullable(),
+  entrada_saida: z.string().nullable(),
 });
 
 export default function DialogEditarViagem(props: {
@@ -117,7 +115,7 @@ export default function DialogEditarViagem(props: {
       id_capitao: null,
       id_armador: null,
       id_mestre: null,
-      entrada_sahida: null,
+      entrada_saida: null,
     },
   });
 
@@ -160,15 +158,9 @@ export default function DialogEditarViagem(props: {
     if (viagem && open) {
       form.reset({
         id: viagem.id,
-        data_viagem: dayjs(viagem.data_viagem).isValid()
-          ? dayjs(viagem.data_viagem).format('DD-MM-YYYY')
-          : '',
-        data_chegada: dayjs(viagem.data_chegada).isValid()
-          ? dayjs(viagem.data_chegada).format('DD-MM-YYYY')
-          : '',
-        data_rio: dayjs(viagem.data_rio).isValid()
-          ? dayjs(viagem.data_rio).format('DD-MM-YYYY')
-          : '',
+        data_viagem: viagem.data_viagem ? String(viagem.data_viagem) : '',
+        data_chegada: viagem.data_chegada ? String(viagem.data_chegada) : '',
+        data_rio: viagem.data_rio ? String(viagem.data_rio) : '',
         dias_viagem: viagem.dias_viagem?.toString() || '',
         porto_origem: viagem.porto_origem?.id,
         dias_porto_origem: viagem.dias_porto_origem?.toString() || '',
@@ -179,14 +171,14 @@ export default function DialogEditarViagem(props: {
         id_capitao: viagem.capitao?.id,
         id_armador: viagem.armador?.id,
         id_mestre: viagem.mestre?.id,
-        entrada_sahida: viagem.entrada_sahida,
+        entrada_saida: viagem.entrada_saida,
       });
     }
   }, [viagem, open]);
 
   async function handleSubmit(values: z.infer<typeof formSchema>) {
     setSubmitting(true);
-    if (values.data_rio || values.id_embarcacao || values.entrada_sahida)
+    if (values.data_rio || values.id_embarcacao || values.entrada_saida)
       try {
         await fetcher('/api/viagem/update', {
           method: 'PUT',
@@ -450,12 +442,12 @@ export default function DialogEditarViagem(props: {
 
               <FormField
                 control={form.control}
-                name='entrada_sahida'
+                name='entrada_saida'
                 render={({ field }) => (
                   <FormItem className='flex flex-col grow'>
                     <FormLabel>Tipo</FormLabel>
                     <Select
-                      name='entrada_sahida'
+                      name='entrada_saida'
                       onValueChange={field.onChange}
                       value={field.value || 'undefined'}
                       // defaultValue={field.value?.toString()}
@@ -517,11 +509,11 @@ export default function DialogEditarViagem(props: {
                                 )?.nome +
                                 (portos?.find(
                                   (porto) => porto.id === field.value
-                                )?.pais?.pais
+                                )?.pais?.nome
                                   ? ' | ' +
                                     portos?.find(
                                       (porto) => porto.id === field.value
-                                    )?.pais?.pais
+                                    )?.pais?.nome
                                   : '')
                               : 'Selecionar Porto'}
                             <ChevronsUpDownIcon className='w-4 h-4 ml-2 opacity-50 shrink-0' />
@@ -552,7 +544,7 @@ export default function DialogEditarViagem(props: {
                                   }}
                                 >
                                   {porto.nome}{' '}
-                                  {porto.pais?.pais && ' | ' + porto.pais.pais}
+                                  {porto.pais?.nome && ' | ' + porto.pais.nome}
                                 </CommandItem>
                               ))}
                             </CommandList>
@@ -602,11 +594,11 @@ export default function DialogEditarViagem(props: {
                                 )?.nome +
                                 (portos?.find(
                                   (porto) => porto.id === field.value
-                                )?.pais?.pais
+                                )?.pais?.nome
                                   ? ' | ' +
                                     portos?.find(
                                       (porto) => porto.id === field.value
-                                    )?.pais?.pais
+                                    )?.pais?.nome
                                   : '')
                               : 'Selecionar Porto'}
                             <ChevronsUpDownIcon className='w-4 h-4 ml-2 opacity-50 shrink-0' />
@@ -636,7 +628,7 @@ export default function DialogEditarViagem(props: {
                                   }}
                                 >
                                   {porto.nome}{' '}
-                                  {porto.pais?.pais && ' | ' + porto.pais.pais}
+                                  {porto.pais?.nome && ' | ' + porto.pais.nome}
                                 </CommandItem>
                               ))}
                             </CommandList>
@@ -722,7 +714,7 @@ export default function DialogEditarViagem(props: {
                                     {embarcacao.nome} |{' '}
                                     {embarcacao.tipo_embarcacao?.tipo}{' '}
                                     {embarcacao.pais
-                                      ? ' | ' + embarcacao.pais?.pais
+                                      ? ' | ' + embarcacao.pais?.nome
                                       : ''}
                                   </CommandItem>
                                 );

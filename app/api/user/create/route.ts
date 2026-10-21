@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
-import { hash } from "@node-rs/argon2";
-import { generateIdFromEntropySize } from "lucia";
+import { hash } from "bcryptjs";
 import sendEmailNotification from "@/lib/sendemail";
 import isEmail from "validator/es/lib/isEmail";
 import { validateRequest } from "@/auth";
@@ -12,7 +11,7 @@ export async function POST(req: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const { useremail, nome, role } = await req.json();
+  const { useremail, role } = await req.json();
   const email = useremail.toLowerCase();
 
   if (!isEmail(email)) {
@@ -24,7 +23,7 @@ export async function POST(req: Request) {
 
   const existe = await prisma.user.findFirst({
     where: {
-      email: {
+      username: {
         equals: email,
         mode: "insensitive",
       },
@@ -54,23 +53,13 @@ export async function POST(req: Request) {
 
   const password = generatePass();
 
-  const passwordHash = await hash(password, {
-    // recommended minimum parameters
-    memoryCost: 19456,
-    timeCost: 2,
-    outputLen: 32,
-    parallelism: 1,
-  });
-  const userId = generateIdFromEntropySize(16); // 16 characters long
+  const passwordHash = await hash(password, 10);
 
-  // TODO: check if email is already used
   await prisma.user.create({
     data: {
-      id: userId,
-      email: email,
+      username: email,
       password_hash: passwordHash,
-      nome: nome,
-      role: role,
+      role: role.toLowerCase(),
     },
   });
   await sendEmailNotification(email, "Sua senha temporária", `${password}`);

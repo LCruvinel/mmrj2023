@@ -1,4 +1,4 @@
-import { lucia, validateRequest } from "@/auth";
+import { invalidateUserSessions, validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 
 export async function PUT(req: Request) {
@@ -8,14 +8,14 @@ export async function PUT(req: Request) {
   if (!user || user.role !== "ADMIN") {
     return new Response("Unauthorized", { status: 401 });
   }
-  await lucia.invalidateUserSessions(id);
+  await invalidateUserSessions(id);
 
   const result = await prisma.user.update({
     where: {
       id: id,
     },
     data: {
-      habilitado: habilitado,
+      active: habilitado,
     },
   });
   return Response.json(result);

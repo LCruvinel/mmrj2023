@@ -250,7 +250,7 @@ export default function BotaoNovaeEscala(props: {
                                 }}
                               >
                                 {porto.nome}{' '}
-                                {porto.pais?.pais && ' | ' + porto.pais.pais}
+                                {porto.pais?.nome && ' | ' + porto.pais.nome}
                               </CommandItem>
                             ))}
                           </CommandList>

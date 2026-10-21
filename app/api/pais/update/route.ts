@@ -16,7 +16,7 @@ export async function PUT(req: Request) {
         not: Number(id_pais),
       },
       AND: {
-        pais: {
+        nome: {
           equals: nome,
           mode: "insensitive",
         },
@@ -40,7 +40,7 @@ export async function PUT(req: Request) {
       id: Number(id_pais),
     },
     data: {
-      pais: nome,
+      nome: nome,
       gentilico: gentilico,
     },
   });

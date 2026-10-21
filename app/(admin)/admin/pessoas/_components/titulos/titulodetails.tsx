@@ -65,7 +65,7 @@ export default function TituloDetails(props: {
                       {pessoa.nome}
                     </TableCell>
                     <TableCell className="text-xs font-medium">
-                      {pessoa.pais?.pais}
+                      {pessoa.pais?.nome}
                     </TableCell>
                   </TableRow>
                 ))}

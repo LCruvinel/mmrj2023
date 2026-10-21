@@ -14,10 +14,10 @@ export async function GET(req: NextRequest, res: NextApiResponse) {
   }
 
   const client = new Client({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
+    user: process.env.DB_USER ?? 'postgres',
+    host: process.env.DB_HOST ?? 'localhost',
+    database: process.env.DB_NAME ?? 'proj_fapesp',
+    password: process.env.DB_PASSWORD ?? '',
     port: parseInt(process.env.DB_PORT || '5432', 10),
     ssl: {
       rejectUnauthorized: false, // Accept self-signed certificates
@@ -58,22 +58,25 @@ export async function GET(req: NextRequest, res: NextApiResponse) {
     archive.pipe(passThrough);
 
     const tablesResult = await client.query(
-      "SELECT tablename FROM pg_tables WHERE schemaname='bd_embarcacoes'"
+      "SELECT schemaname, tablename FROM pg_tables WHERE schemaname IN ('auth', 'mmrj') ORDER BY schemaname, tablename"
     );
 
-    const tables = tablesResult.rows.map((row) => row.tablename);
+    const tables = tablesResult.rows.map((row) => ({
+      schemaName: row.schemaname,
+      tableName: row.tablename,
+    }));
 
-    for (const tableName of tables) {
+    for (const { schemaName, tableName } of tables) {
       try {
         // Fetch the schema of the table
         const tableSchemaResult = await client.query(`
           SELECT column_name, data_type, character_maximum_length
           FROM INFORMATION_SCHEMA.COLUMNS
-          WHERE table_name = '${tableName}';
+          WHERE table_schema = '${schemaName}' AND table_name = '${tableName}';
         `);
 
-        let tableSQL = `-- Table: ${tableName}\n\n`;
-        tableSQL += `CREATE TABLE bd_embarcacoes.${tableName} (\n`;
+        let tableSQL = `-- Table: ${schemaName}.${tableName}\n\n`;
+        tableSQL += `CREATE TABLE ${schemaName}.${tableName} (\n`;
         tableSQL += tableSchemaResult.rows
           .map((column) => {
             return `  ${column.column_name} ${column.data_type}${
@@ -87,7 +90,7 @@ export async function GET(req: NextRequest, res: NextApiResponse) {
 
         // Fetch the data of the table
         const tableDataResult = await client.query(
-          `SELECT * FROM bd_embarcacoes.${tableName}`
+          `SELECT * FROM ${schemaName}.${tableName}`
         );
         const rows = tableDataResult.rows;
 
@@ -109,7 +112,7 @@ export async function GET(req: NextRequest, res: NextApiResponse) {
                   }
                 })
                 .join(', ');
-              return `INSERT INTO bd_embarcacoes.${tableName} (${columns}) VALUES (${values});`;
+              return `INSERT INTO ${schemaName}.${tableName} (${columns}) VALUES (${values});`;
             })
             .join('\n') + '\n';
 

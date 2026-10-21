@@ -46,7 +46,7 @@ const setData = (worksheet: any, pessoas: Pessoa[]) => {
       pessoa.id,
       pessoa?.nome,
       pessoa?.titulo_nobreza?.titulo,
-      pessoa?.pais?.pais,
+      pessoa?.pais?.nome,
     ]);
   });
 };

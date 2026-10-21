@@ -20,7 +20,6 @@ export async function GET(req: Request) {
     select: {
       id: true,
       nome: true,
-      observacao: true,
       tipo_embarcacao: {
         select: {
           id: true,
@@ -39,5 +38,5 @@ export async function GET(req: Request) {
     },
   });
 
-  return Response.json(result);
+  return Response.json(result.map((embarcacao) => ({ ...embarcacao, observacao: null })));
 }

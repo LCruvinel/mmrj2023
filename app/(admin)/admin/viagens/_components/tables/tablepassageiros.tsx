@@ -58,10 +58,7 @@ export default function TablePassageiros(props: {
       <Table className='border-b'>
         <TableHeader className='p-2 text-xs bg-blue-200 border-t-0 dark:bg-slate-900 '>
           <TableRow className='rounded-ss-xl'>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Total</TableHead>
-            <TableHead>Observações</TableHead>
-            <TableHead></TableHead>
+            <TableHead>Nome</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -71,63 +68,14 @@ export default function TablePassageiros(props: {
               key={passageiro.id}
             >
               <TableCell className='text-xs font-medium'>
-                {passageiro.tipo_passageiro.tipo}
-              </TableCell>
-              <TableCell className='text-xs'>{passageiro.total}</TableCell>
-              <TableCell className='text-xs'>
-                {passageiro.observacoes}
-              </TableCell>
-
-              <TableCell className='w-4'>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size='icon'
-                      variant='link'
-                      className='text-xs text-blue-500'
-                    >
-                      <XIcon className='w-4 text-red-700' />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className='text-red-500'>
-                        Tem a certeza?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Esta ação não pode ser desfeita. Esta ação irá remover
-                        os passageiros.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        disabled={deleting}
-                        className='bg-red-500 hover:bg-red-600'
-                        onClick={() => handleDeletePassageiro(passageiro.id)}
-                      >
-                        {deleting ? 'Aguarde...' : 'Remover'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                {(passageiro as any)?.nome ||
+                  passageiro?.tipo_passageiro?.tipo ||
+                  'N/A'}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
 
-        <TableFooter>
-          <TableRow>
-            <TableCell></TableCell>
-            <TableCell colSpan={3} className='text-xs font-bold'>
-              Total:{' '}
-              {passageiros?.reduce(
-                (acc, passageiro) => acc + (passageiro.total || 0),
-                0
-              ) || 0}
-            </TableCell>
-          </TableRow>
-        </TableFooter>
         {passageiros?.length === 0 && (
           <TableCaption>
             Não registámos qualquer passageiro nesta viagem

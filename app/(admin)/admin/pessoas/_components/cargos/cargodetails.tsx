@@ -65,7 +65,7 @@ export default function CargoDetails(props: {
                       {relac.pessoa?.nome}
                     </TableCell>
                     <TableCell className="text-xs font-medium">
-                      {relac.pessoa?.pais?.pais}
+                      {relac.pessoa?.pais?.nome}
                     </TableCell>
                   </TableRow>
                 ))}
