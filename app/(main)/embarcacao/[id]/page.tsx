@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 
-export default function Page({ params }: { params: { id: string } }) {
+export default function Page(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   //pedir ao zé para fazer o fetch da embarcação com o id = params.id
   const [personData, setPersonData] = useState<Embarcacao>();
   useEffect(() => {

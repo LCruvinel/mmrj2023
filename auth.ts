@@ -78,7 +78,7 @@ export const validateRequest = cache(
   async (): Promise<
     { user: AuthUser; session: AuthSession } | { user: null; session: null }
   > => {
-    const sessionId = cookies().get(SESSION_COOKIE_NAME)?.value ?? null;
+    const sessionId = (await cookies()).get(SESSION_COOKIE_NAME)?.value ?? null;
     if (!sessionId) {
       return {
         user: null,
@@ -94,7 +94,7 @@ export const validateRequest = cache(
     if (!foundSession) {
       try {
         const sessionCookie = createBlankSessionCookie();
-        cookies().set(
+        (await cookies()).set(
           sessionCookie.name,
           sessionCookie.value,
           sessionCookie.attributes
@@ -108,7 +108,7 @@ export const validateRequest = cache(
       await invalidateSession(foundSession.token);
       try {
         const sessionCookie = createBlankSessionCookie();
-        cookies().set(
+        (await cookies()).set(
           sessionCookie.name,
           sessionCookie.value,
           sessionCookie.attributes
@@ -154,7 +154,7 @@ export const validateRequest = cache(
     try {
       if (session.fresh) {
         const sessionCookie = createSessionCookie(session.id, session.expiresAt);
-        cookies().set(
+        (await cookies()).set(
           sessionCookie.name,
           sessionCookie.value,
           sessionCookie.attributes

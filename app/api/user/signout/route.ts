@@ -10,7 +10,7 @@ export async function GET() {
   await invalidateSession(session.id);
 
   const sessionCookie = createBlankSessionCookie();
-  cookies().set(
+  (await cookies()).set(
     sessionCookie.name,
     sessionCookie.value,
     sessionCookie.attributes,

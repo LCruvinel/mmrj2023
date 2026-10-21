@@ -204,11 +204,12 @@ async function getData(id: string) {
 export default async function TripPage({
   params,
 }: {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }) {
-  const viagem = (await getData(params.id)) as unknown as Viagem;
+  const { id } = await params;
+  const viagem = (await getData(id)) as unknown as Viagem;
   const tripulacao = ((viagem as any)?.tripulacao ?? {}) as Record<string, string>;
   const tripulacaoNome = (chave: string) => tripulacao[chave] || 'N/A';
   const destinoValor =

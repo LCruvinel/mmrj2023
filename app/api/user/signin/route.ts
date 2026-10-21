@@ -59,7 +59,7 @@ export async function POST(req: Request) {
 
   const session = await createAuthSession(existingUser.id);
   const sessionCookie = createSessionCookie(session.id, session.expiresAt);
-  cookies().set(
+  (await cookies()).set(
     sessionCookie.name,
     sessionCookie.value,
     sessionCookie.attributes,

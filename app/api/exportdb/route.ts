@@ -1,12 +1,11 @@
 import { Client } from 'pg';
 import archiver from 'archiver';
 import { PassThrough } from 'stream';
-import { NextApiRequest, NextApiResponse } from 'next';
 import { validateRequest } from '@/auth';
 import { NextRequest } from 'next/server';
 import dayjs from 'dayjs';
 
-export async function GET(req: NextRequest, res: NextApiResponse) {
+export async function GET(req: NextRequest) {
   const { user } = await validateRequest();
 
   if (!user || user.role != 'ADMIN') {

@@ -84,11 +84,12 @@ async function getData(id: string) {
 export default async function VesselPage({
   params,
 }: {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }) {
-  const embarcacao = (await getData(params.id)) as unknown as Embarcacao;
+  const { id } = await params;
+  const embarcacao = (await getData(id)) as unknown as Embarcacao;
 
   return (
     <div className="p-1 md:p-4 mt-10 lg:mx-24 bg-white rounded-xl flex flex-col gap-2 shadow-2xl dark:bg-slate-700">
