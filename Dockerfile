@@ -40,7 +40,13 @@ RUN \
 
 # Production image, copy all the files and run next
 FROM base AS runner
-RUN apk add --no-cache libc6-compat openssl
+# Pull in Alpine security fixes released after the base image was built, and drop the
+# package managers bundled with the Node image: server.js only needs `node`, and npm/yarn
+# (with their own dependencies) are where most of the image's reported CVEs live.
+RUN apk upgrade --no-cache \
+  && apk add --no-cache libc6-compat openssl \
+  && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-* \
+     /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/yarn /usr/local/bin/yarnpkg
 WORKDIR /app
 
 ENV NODE_ENV=production
